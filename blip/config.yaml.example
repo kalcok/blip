@@ -1,0 +1,8 @@
+# Blip monitor configuration
+---
+Monitored:
+  google.com:
+    ping:
+      active: True
+      interval: 11 #Seconds
+      deadAfter: 5 #Attempts

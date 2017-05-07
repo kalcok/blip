@@ -21,7 +21,7 @@ func NewFileLogger(log_path string, level int) (logger *fileLogger){
 
 func (logger *fileLogger)Log(level int, msg string){
 	now := time.Now().Format(time.RFC3339)
-	msg = fmt.Sprintf("%s - %s - %s\n", logger.LevelString(), now, msg)
+	msg = fmt.Sprintf("%s - %s - %s\n", logger.LevelItoa(level), now, msg)
 	if level <= logger.level{
 		logger.logFile.WriteString(msg)
 	}

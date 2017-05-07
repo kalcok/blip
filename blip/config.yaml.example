@@ -1,8 +1,13 @@
 # Blip monitor configuration
 ---
-Monitored:
-  google.com:
-    ping:
-      active: True
-      interval: 11 #Seconds
-      deadAfter: 5 #Attempts
+Monitored:          # Configuration options regarding monitored hosts
+  google.com:       # Hostname or IP address of monitored host
+    ping:           # Configuration for Ping module
+      active: True  # Whether this modul should be active for this host
+      interval: 10  # Seconds
+      deadAfter: 5  # Attempts
+
+Logging:
+  FileLogger:                    # Configuration for module that logs data into local file
+    level: Default               # Logging level. One of: Debug, Info (Default), Warning, Error
+    logFile: /varl/log/blip.log  # Absolute path to logging file

@@ -30,7 +30,7 @@ func stop(monitors []monitor.Monitor, sig_chan chan os.Signal){
 	}
 }
 
-func run(blip_conf *monitor.ConfTemplate){
+func run(blip_conf *ConfTemplate){
 	var running_monitors []monitor.Monitor
 	for hostname, host_config := range blip_conf.Monitored {
 		if host_config.Ping.Active{
@@ -50,14 +50,13 @@ func run(blip_conf *monitor.ConfTemplate){
 
 }
 
-func parse_conf(path string, dump bool) (cnf *monitor.ConfTemplate){
+func parse_conf(path string, dump bool) (cnf *ConfTemplate){
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil{
 		panic(err)
 	}
 
-	cnf = new(monitor.ConfTemplate)
-
+	cnf = new(ConfTemplate)
 	err = yaml.Unmarshal(yamlFile, &cnf)
 	if err != nil{
 		panic(err)

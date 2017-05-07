@@ -1,4 +1,4 @@
-package monitor_test
+package blip_testing
 
 import (
 	"testing"
@@ -93,3 +93,5 @@ func TestPingMonitorGracefulStop(t *testing.T){
 	}
 
 }
+
+// TODO: Test actual Ping

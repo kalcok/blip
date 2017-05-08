@@ -53,7 +53,7 @@ func (logger *baseLogger) LevelItoa(level int) (level_name string){
 		level_name = "ERROR"
 	case WARNING:
 		level_name = "WARNING"
-	case INFO:
+	case INFO, DEFAULT:
 		level_name = "INFO"
 	case DEBUG:
 		level_name = "DEBUG"
@@ -71,7 +71,7 @@ func (logger *baseLogger) LevelAtoi(level string) (level_const int){
 		level_const = ERROR
 	case "warning":
 		level_const = WARNING
-	case "info":
+	case "info", "default":
 		level_const = INFO
 	case "debug":
 		level_const = DEBUG

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"blip/monitor"
+	"blip/logger"
 	"os"
 	"os/signal"
 	"time"
@@ -77,7 +78,25 @@ func parse_conf(path string, dump bool) (cnf *ConfTemplate){
 	}
 	return
 }
+func init_logger(conf *ConfTemplate) (l logger.Logger){
+	log_cnf := conf.Logging
+	if log_cnf.FileLogger != (confFileLogger{}){
+		path := log_cnf.FileLogger.LogFile
+		if path == ""{
+			panic("Failed to initialize logger. Can't use empty string as 'logFile' path")
+		}
+		l = logger.NewFileLogger(path, logger.DEFAULT)
+		l.SetLevel(l.LevelAtoi(log_cnf.FileLogger.Level))
+	}else{
+		l = nil
+	}
+	return
+}
 func main(){
 	conf := parse_conf("./config.yaml", true)
+	LOGGER := init_logger(conf)
+	defer LOGGER.Close()
+	LOGGER.Log(logger.INFO, "Starting Blip monitoring")
 	run(conf)
+	LOGGER.Log(logger.INFO, "Stopping Blip monitoring")
 }

@@ -36,7 +36,7 @@ func (logger *fileLogger) SetLogFile(path string){
 	logger.logFile = file
 }
 
-func (logger *fileLogger) CloseLogFile(){
+func (logger *fileLogger) Close(){
 	if logger.logFile != nil{
 		logger.logFile.Close()
 	}

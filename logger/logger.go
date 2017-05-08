@@ -16,6 +16,7 @@ const (
 
 type Logger interface {
 	Log(level int, msg string)
+	Close()
 	Level() int
 	SetLevel(level int)
 	LevelItoa(level int) string
@@ -29,6 +30,11 @@ type baseLogger struct {
 func (logger *baseLogger) Log(level int, msg string){
 	panic("Log function must be implemented in specialized Logger modules.")
 }
+
+func (logger *baseLogger) Close(){
+	// Use this method in subclasses of baseLogger to cleanup logger resources
+}
+
 func (logger *baseLogger) Level() int{
 	return logger.level
 }

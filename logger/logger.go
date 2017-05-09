@@ -3,6 +3,8 @@ package logger
 import (
 	"strings"
 	"fmt"
+	"time"
+	"os"
 )
 
 const (
@@ -14,8 +16,14 @@ const (
 	DEBUG = iota
 )
 
+type LogEntry struct {
+	level int
+	msg string
+}
+
 type Logger interface {
 	Log(level int, msg string)
+	log()
 	Close()
 	Level() int
 	SetLevel(level int)
@@ -25,10 +33,31 @@ type Logger interface {
 
 type baseLogger struct {
 	level int
+	log_chan chan LogEntry
 }
 
 func (logger *baseLogger) Log(level int, msg string){
-	panic("Log function must be implemented in specialized Logger modules.")
+	if level <= logger.level{
+		// Non-blocking sending to channel
+		go func() {
+			select {
+			case logger.log_chan <- LogEntry{level:level, msg:msg}:
+			case <-time.After(time.Second):
+				// XXX: Maybe find better way to handle failed logging attempts
+				fmt.Fprintln(os.Stderr,
+					"Logging timed out. Make sure your logger is properly initialized.")
+			}
+		}()
+	}
+}
+
+func (logger *baseLogger) log(){
+	panic("Internal log function must be implemented in specialized Logger modules.")
+}
+
+func (logger *baseLogger) init(level int){
+	logger.SetLevel(level)
+	logger.log_chan = make(chan LogEntry, 100)
 }
 
 func (logger *baseLogger) Close(){

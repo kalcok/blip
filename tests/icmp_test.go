@@ -19,7 +19,7 @@ func TestPingMonitorInterfaceCompliance(t *testing.T){
 	defer func(){
 		err := recover()
 		if err != nil{
-			t.Error(fmt.Printf("PingMonitor does not complain with Monitor interface. %s", err))
+			t.Error(fmt.Sprintf("PingMonitor does not complain with Monitor interface. %s", err))
 		}
 	}()
 	var _ monitor.Monitor = (*monitor.PingMonitor)(nil)

@@ -14,16 +14,20 @@ type fileLogger struct{
 
 func NewFileLogger(log_path string, level int) (logger *fileLogger){
 	logger = new(fileLogger)
-	logger.SetLevel(level)
+	logger.init(level)
 	logger.SetLogFile(log_path)
+	go logger.log()
 	return
 }
 
-func (logger *fileLogger)Log(level int, msg string){
-	now := time.Now().Format(time.RFC3339)
-	msg = fmt.Sprintf("%s - %s - %s\n", logger.LevelItoa(level), now, msg)
-	if level <= logger.level{
-		logger.logFile.WriteString(msg)
+func (logger *fileLogger)log(){
+	for true {
+		select {
+		case entry := <-logger.log_chan:
+			now := time.Now().Format(time.RFC3339)
+			msg := fmt.Sprintf("%s - %s - %s\n", logger.LevelItoa(entry.level), now, entry.msg)
+			logger.logFile.WriteString(msg)
+		}
 	}
 }
 

@@ -25,7 +25,7 @@ func (logger *fileLogger)log(){
 		select {
 		case entry := <-logger.log_chan:
 			now := time.Now().Format(time.RFC3339)
-			msg := fmt.Sprintf("%s - %s - %s\n", logger.LevelItoa(entry.level), now, entry.msg)
+			msg := fmt.Sprintf("%s - %s - %s\n", LevelItoa(entry.level), now, entry.msg)
 			logger.logFile.WriteString(msg)
 		}
 	}

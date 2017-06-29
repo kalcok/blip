@@ -34,8 +34,6 @@ type Logger interface {
 	Close()
 	Level() int
 	SetLevel(level int)
-	LevelItoa(level int) string
-	LevelAtoi(level string) int
 	RegisterAsGlobal()
 }
 
@@ -88,8 +86,15 @@ func (logger *baseLogger) SetLevel(level int){
 	logger.level = level
 }
 
-func (logger *baseLogger) LevelItoa(level int) (level_name string){
-	if level == CURRENT{level = logger.level}
+func (logger *baseLogger) RegisterAsGlobal(){
+	if global_logger == nil{
+		global_logger = logger
+	}else{
+		panic("Global logger already registered.")
+	}
+}
+
+func LevelItoa(level int) (level_name string){
 	switch level {
 	case ERROR:
 		level_name = "ERROR"
@@ -101,38 +106,27 @@ func (logger *baseLogger) LevelItoa(level int) (level_name string){
 		level_name = "DEBUG"
 	default:
 		level_name = "CUSTOM"
-		
+
 	}
 	return
 }
 
-func (logger *baseLogger) LevelAtoi(level string) (level_const int){
+func LevelAtoi(level string) (level_const int){
 	level = strings.ToLower(level)
 	switch level {
 	case "error":
 		level_const = ERROR
 	case "warning":
 		level_const = WARNING
-	case "info", "default":
+	case "", "info", "default":
 		level_const = INFO
 	case "debug":
 		level_const = DEBUG
-	case "current":
-		level_const = logger.level
 	default:
 		panic(fmt.Sprintf("Can't convert level string to constant. Unknown level '%s'",level))
 	}
 	return
 }
-
-func (logger *baseLogger) RegisterAsGlobal(){
-	if global_logger == nil{
-		global_logger = logger
-	}else{
-		panic("Global logger already registered.")
-	}
-}
-
 func GetGlobalLogger(panic_on_fail bool)(Logger, error){
 	if global_logger == nil{
 		if panic_on_fail{

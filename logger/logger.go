@@ -26,6 +26,10 @@ type LogEntry struct {
 
 type Logger interface {
 	Log(level int, msg string)
+	Debug(msg string)
+	Info(msg string)
+	Warning(msg string)
+	Error(msg string)
 	log()
 	Close()
 	Level() int
@@ -54,6 +58,11 @@ func (logger *baseLogger) Log(level int, msg string){
 		}()
 	}
 }
+
+func (logger *baseLogger) Debug(msg string){ logger.Log(DEBUG, msg) }
+func (logger *baseLogger) Info(msg string){ logger.Log(INFO, msg) }
+func (logger *baseLogger) Warning(msg string){ logger.Log(WARNING, msg) }
+func (logger *baseLogger) Error(msg string){ logger.Log(ERROR, msg) }
 
 func (logger *baseLogger) log(){
 	panic("Internal log function must be implemented in specialized Logger modules.")
@@ -124,8 +133,11 @@ func (logger *baseLogger) RegisterAsGlobal(){
 	}
 }
 
-func GetGlobalLogger()(Logger, error){
+func GetGlobalLogger(panic_on_fail bool)(Logger, error){
 	if global_logger == nil{
+		if panic_on_fail{
+			panic("No global logger initialized")
+		}
 		return nil, errors.New("No global logger initialized")
 	}else {
 		return global_logger, nil

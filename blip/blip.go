@@ -96,7 +96,7 @@ func init_logger(conf *ConfTemplate) (new_logger logger.Logger){
 func main(){
 	conf := parse_conf("/tmp/config.yaml", true)
 	init_logger(conf)
-	l, err := logger.GetGlobalLogger()
+	l, err := logger.GetGlobalLogger(false)
 	if err != nil{
 		panic(err)
 	}

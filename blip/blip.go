@@ -87,7 +87,8 @@ func init_logger(conf *ConfTemplate) (new_logger logger.Logger){
 		if path == ""{
 			panic("Failed to initialize logger. Can't use empty string as 'logFile' path")
 		}
-		new_logger = logger.NewFileLogger(path, logger.DEFAULT)
+		lvl := logger.LevelAtoi(log_cnf.FileLogger.Level)
+		new_logger = logger.NewFileLogger(path, lvl)
 		new_logger.RegisterAsGlobal()
 	}
 	return
@@ -104,5 +105,5 @@ func main(){
 
 	l.Log(logger.INFO, "Starting Blip monitoring")
 	run(conf)
-	l.Log(logger.INFO, "Stopping Blip monitoring")
+	l.Log(logger.INFO, "Stopped Blip monitoring")
 }

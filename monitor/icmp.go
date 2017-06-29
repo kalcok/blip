@@ -7,11 +7,7 @@ import (
 	"net"
 	"time"
 	"errors"
-)
-
-const (
-	PING_OK   = iota
-	PING_FAIL = iota
+	"blip/logger"
 )
 
 var MIN_ICMP_INTERVAL = 10
@@ -29,22 +25,28 @@ func pick_ipv4(addresses []string) string{
 
 type PingMonitor struct {
 	baseMonitor
+	log logger.Logger
 }
 
 func NewPingMonitor(host string, interval int) (monitor *PingMonitor, err error) {
+	log, _ := logger.GetGlobalLogger(true)
+	log.Debug(fmt.Sprintf("Initiating new PingMonitor for host %s with period %d", host, interval))
 	monitor = nil
 	err = nil
 	monitor = new(PingMonitor)
+	monitor.log = log
 	ok := monitor.SetHost(host)
 	if ok != nil {
 		monitor = nil
 		err = ok
+		log.Error(fmt.Sprintf("Failed to initialize PingMonitor %s. Error: %s", host, err))
 		return
 	}
 	ok = monitor.SetInterval(interval)
 	if ok != nil {
 		monitor = nil
 		err = ok
+		log.Error(fmt.Sprintf("Failed to initialize PingMonitor %s. Error: %s", host, err))
 		return
 	}
 	monitor.terminus = make(chan bool)
@@ -74,10 +76,22 @@ func (monitor *PingMonitor) SetInterval(interval int) (err error) {
 		interval = MIN_ICMP_INTERVAL
 	}
 	if interval < MIN_ICMP_INTERVAL {
-		err = errors.New(fmt.Sprintf("Can't execute monitoring actions in interval lower than %d seconds.", MIN_ICMP_INTERVAL))
+		err_msg := fmt.Sprintf(
+			"Can't execute monitoring actions in interval lower than %d seconds.", MIN_ICMP_INTERVAL)
+		monitor.log.Error(err_msg)
+		err = errors.New(err_msg)
 		return
 	}
 
+	// Don't log this message during initialization
+	if monitor.interval != 0 {
+		monitor.log.Debug(
+			fmt.Sprintf(
+				"Setting interval of PingMonitor for host '%s' from %d to %d",
+				monitor.host,
+				monitor.interval,
+				interval))
+	}
 	monitor.interval = time.Duration(interval) * time.Second
 	return
 }
@@ -87,28 +101,27 @@ func (monitor *PingMonitor) Run() {
 	monitor.running = true
 
 	for run {
-		fmt.Printf("Monitoring %s with ping...", monitor.host)
 		err := monitor.ping()
 		if err != nil {
-			fmt.Printf("\nPing to %s failed. %s", monitor.host, err)
+			monitor.log.Warning(fmt.Sprintf("Ping to '%s' failed. %s", monitor.host, err))
 		} else {
-			fmt.Print("OK\n")
+			monitor.log.Debug(fmt.Sprintf("Pinging '%s' - OK", monitor.host))
 		}
 		select {
 		case _, ok := <-monitor.terminus:
 			if !ok {
-				fmt.Println("Recieved termination order.")
 				run = false
 				break
 			}
 		case <-time.After(monitor.interval):
 		}
 	}
-	fmt.Println("Graciously exiting go routine")
+	monitor.log.Info(fmt.Sprintf("Terminated PingMonitor for host '%s'", monitor.host))
 	monitor.running = false
 }
 
 func (monitor *PingMonitor) Terminate() {
+	monitor.log.Debug(fmt.Sprintf("Requesting PingMonitor for host '%s' to terminate.", monitor.host))
 	close(monitor.terminus)
 }
 

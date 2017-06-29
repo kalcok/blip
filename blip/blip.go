@@ -78,25 +78,31 @@ func parse_conf(path string, dump bool) (cnf *ConfTemplate){
 	}
 	return
 }
-func init_logger(conf *ConfTemplate) (l logger.Logger){
+func init_logger(conf *ConfTemplate) (new_logger logger.Logger){
+	new_logger = nil
+
 	log_cnf := conf.Logging
 	if log_cnf.FileLogger != (confFileLogger{}){
 		path := log_cnf.FileLogger.LogFile
 		if path == ""{
 			panic("Failed to initialize logger. Can't use empty string as 'logFile' path")
 		}
-		l = logger.NewFileLogger(path, logger.DEFAULT)
-		l.SetLevel(l.LevelAtoi(log_cnf.FileLogger.Level))
-	}else{
-		l = nil
+		new_logger = logger.NewFileLogger(path, logger.DEFAULT)
+		new_logger.RegisterAsGlobal()
 	}
 	return
 }
+
 func main(){
-	conf := parse_conf("./config.yaml", true)
-	LOGGER := init_logger(conf)
-	defer LOGGER.Close()
-	LOGGER.Log(logger.INFO, "Starting Blip monitoring")
+	conf := parse_conf("/tmp/config.yaml", true)
+	init_logger(conf)
+	l, err := logger.GetGlobalLogger()
+	if err != nil{
+		panic(err)
+	}
+	defer l.Close()
+
+	l.Log(logger.INFO, "Starting Blip monitoring")
 	run(conf)
-	LOGGER.Log(logger.INFO, "Stopping Blip monitoring")
+	l.Log(logger.INFO, "Stopping Blip monitoring")
 }

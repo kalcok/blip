@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"os"
+	"errors"
 )
 
 const (
@@ -15,6 +16,8 @@ const (
 	INFO = iota
 	DEBUG = iota
 )
+
+var global_logger Logger
 
 type LogEntry struct {
 	level int
@@ -29,6 +32,7 @@ type Logger interface {
 	SetLevel(level int)
 	LevelItoa(level int) string
 	LevelAtoi(level string) int
+	RegisterAsGlobal()
 }
 
 type baseLogger struct {
@@ -110,4 +114,20 @@ func (logger *baseLogger) LevelAtoi(level string) (level_const int){
 		panic(fmt.Sprintf("Can't convert level string to constant. Unknown level '%s'",level))
 	}
 	return
+}
+
+func (logger *baseLogger) RegisterAsGlobal(){
+	if global_logger == nil{
+		global_logger = logger
+	}else{
+		panic("Global logger already registered.")
+	}
+}
+
+func GetGlobalLogger()(Logger, error){
+	if global_logger == nil{
+		return nil, errors.New("No global logger initialized")
+	}else {
+		return global_logger, nil
+	}
 }
